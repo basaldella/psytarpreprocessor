@@ -1,3 +1,4 @@
+import minerva as mine
 import pandas as pd
 import re
 
@@ -20,3 +21,16 @@ sentences[["sentences", "ADR", "WD", "EF", "INF", "SSI", "DI"]].to_csv(
 
 sheet = "ADR"
 labels = pd.read_excel(XLSX_PATH, sheet_name=sheet + "_Identified")
+
+colnames = ["drug_id", "sentence_index", "sentences"]
+annotation_fields = []
+for i in range(30):
+    annotation_fields.append(f"{sheet}{i+1}")
+
+print(colnames)
+for key, row in labels.iterrows():
+
+    sentence = mine.Sentence(row.sentences)
+    anno = row["ADR1"]
+    start_index = row.sentences.index(anno)
+    end_index = start_index + len(anno) - 1
