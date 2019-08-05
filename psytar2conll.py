@@ -3,7 +3,6 @@ import minerva as mine
 import pandas as pd
 import random
 import re
-import warnings
 
 
 def sentence_to_conll_string(
@@ -30,6 +29,7 @@ def sentence_to_conll_string(
 
 XLSX_PATH = "data/PsyTAR_dataset.xlsx"
 CSV_PATH = "data/PsyTAR_binary.csv"
+BINARY_PATH = "data/binary/"
 CONLL_ALL_PATH = "data/all/"
 CONLL_CONFLATED_PATH = "data/conflated/"
 
@@ -45,9 +45,51 @@ sentence_df[["ADR", "WD", "EF", "INF", "SSI", "DI"]] = (
     .astype(int)
 )
 
-sentence_df[["sentences", "ADR", "WD", "EF", "INF", "SSI", "DI"]].to_csv(
-    CSV_PATH, header=True, index=False, sep="\t", encoding="utf8", decimal="."
+print("Writing binary datasets...")
+
+out_df = sentence_df[["sentences", "ADR", "WD", "EF", "INF", "SSI", "DI"]].iloc[:-1]
+out_df.to_csv(
+    BINARY_PATH + os.sep + "all.csv",
+    header=True,
+    index=False,
+    sep="\t",
+    encoding="utf8",
+    decimal=".",
 )
+
+train_df = out_df.sample(frac=0.7, random_state=120307)
+testdev_df = out_df.drop(train_df.index)
+test_df = testdev_df.sample(frac=0.66)
+dev_df = testdev_df.drop(test_df.index)
+
+train_df.to_csv(
+    BINARY_PATH + os.sep + "train.csv",
+    header=True,
+    index=False,
+    sep="\t",
+    encoding="utf8",
+    decimal=".",
+)
+
+test_df.to_csv(
+    BINARY_PATH + os.sep + "test.csv",
+    header=True,
+    index=False,
+    sep="\t",
+    encoding="utf8",
+    decimal=".",
+)
+
+dev_df.to_csv(
+    BINARY_PATH + os.sep + "dev.csv",
+    header=True,
+    index=False,
+    sep="\t",
+    encoding="utf8",
+    decimal=".",
+)
+
+print("Done.")
 
 sentences_map = {}
 for drug_name in sentence_df.drug_id.unique()[:-1]:
