@@ -1,10 +1,14 @@
+import os
 import minerva as mine
 import pandas as pd
+import random
 import re
 import warnings
 
 
-def sentence_to_conll_string(sentence: mine.Sentence, entity_name: str) -> str:
+def sentence_to_conll_string(
+    sentence: mine.Sentence, entity_name: str, conflate: bool = False
+) -> str:
 
     words = [t.text for t in sentence]
     annos = sentence.get_annotation(entity_name)
@@ -14,9 +18,10 @@ def sentence_to_conll_string(sentence: mine.Sentence, entity_name: str) -> str:
 
         if ner:
             for span in annos:
-                labels[span.start_index] = "B-" + span.value
+                entity_tag = span.value if not conflate else "Entity"
+                labels[span.start_index] = "B-" + entity_tag
                 for index in range(span.start_index + 1, span.end_index + 1):
-                    labels[index] = "I-" + span.value
+                    labels[index] = "I-" + entity_tag
         else:
             raise NotImplementedError("Ouput for non-spans is not implemented yet.")
 
@@ -25,7 +30,8 @@ def sentence_to_conll_string(sentence: mine.Sentence, entity_name: str) -> str:
 
 XLSX_PATH = "data/PsyTAR_dataset.xlsx"
 CSV_PATH = "data/PsyTAR_binary.csv"
-CONLL_PATH = "data/PsyTAR_conll.csv"
+CONLL_ALL_PATH = "data/all/"
+CONLL_CONFLATED_PATH = "data/conflated/"
 
 sentence_df = pd.read_excel(XLSX_PATH, sheet_name="Sentence_Labeling")
 
@@ -100,9 +106,70 @@ print(
     f"There are {total_warns} invalid annotations in {len(invalid_sentences)} sentences."
 )
 
-with open(CONLL_PATH, "w", encoding="utf8") as f:
+sentences = []
+for doc_id, doc in sentences_map.items():
+    for sentence_id, sentence in doc.items():
+        if (doc_id, sentence_id) not in invalid_sentences:
+            sentences.append(sentence)
+
+random.seed(120307)
+random.shuffle(sentences)
+train_cut = (len(sentences) // 100) * 70
+dev_cut = train_cut + ((len(sentences) // 100) * 10)
+
+train = sentences[:train_cut]
+dev = sentences[train_cut:dev_cut]
+test = sentences[dev_cut:]
+
+assert len(sentences) == len(train) + len(dev) + len(test)
+
+print(
+    f"Out of          {len(sentences)} sentences,\n"
+    f"I will generate {len(train)} training sentences,\n"
+    f"                {len(dev)} dev sentences, and\n"
+    f"                {len(test)} test sentences."
+)
+
+print("Saving...")
+
+# Saving non-conflated
+with open(CONLL_ALL_PATH + os.sep + "full.txt", "w", encoding="utf8") as f:
     for doc_id, doc in sentences_map.items():
         for sentence_id, sentence in doc.items():
             if (doc_id, sentence_id) not in invalid_sentences:
                 f.write(sentence_to_conll_string(sentence, "PsyTAR"))
                 f.write("\n")
+with open(CONLL_ALL_PATH + os.sep + "train.txt", "w", encoding="utf8") as f:
+    for sentence in train:
+        f.write(sentence_to_conll_string(sentence, "PsyTAR"))
+        f.write("\n")
+with open(CONLL_ALL_PATH + os.sep + "dev.txt", "w", encoding="utf8") as f:
+    for sentence in dev:
+        f.write(sentence_to_conll_string(sentence, "PsyTAR"))
+        f.write("\n")
+with open(CONLL_ALL_PATH + os.sep + "test.txt", "w", encoding="utf8") as f:
+    for sentence in test:
+        f.write(sentence_to_conll_string(sentence, "PsyTAR"))
+        f.write("\n")
+
+# Saving conflated
+with open(CONLL_CONFLATED_PATH + os.sep + "full.txt", "w", encoding="utf8") as f:
+    for doc_id, doc in sentences_map.items():
+        for sentence_id, sentence in doc.items():
+            if (doc_id, sentence_id) not in invalid_sentences:
+                f.write(sentence_to_conll_string(sentence, "PsyTAR", conflate=True))
+                f.write("\n")
+with open(CONLL_CONFLATED_PATH + os.sep + "train.txt", "w", encoding="utf8") as f:
+    for sentence in train:
+        f.write(sentence_to_conll_string(sentence, "PsyTAR", conflate=True))
+        f.write("\n")
+with open(CONLL_CONFLATED_PATH + os.sep + "dev.txt", "w", encoding="utf8") as f:
+    for sentence in dev:
+        f.write(sentence_to_conll_string(sentence, "PsyTAR", conflate=True))
+        f.write("\n")
+with open(CONLL_CONFLATED_PATH + os.sep + "test.txt", "w", encoding="utf8") as f:
+    for sentence in test:
+        f.write(sentence_to_conll_string(sentence, "PsyTAR", conflate=True))
+        f.write("\n")
+
+print("Done!")
