@@ -58,7 +58,7 @@ print("Writing binary datasets...")
 
 out_df = sentence_df[["sentences", "ADR", "WD", "EF", "INF", "SSI", "DI"]].iloc[:-1]
 out_df.to_csv(
-    BINARY_PATH + os.sep + "all.csv",
+    BINARY_PATH + os.sep + "full.csv",
     header=True,
     index=False,
     sep="\t",
@@ -68,7 +68,7 @@ out_df.to_csv(
 
 train_df = out_df.sample(frac=0.7, random_state=120307)
 testdev_df = out_df.drop(train_df.index)
-test_df = testdev_df.sample(frac=0.66)
+test_df = testdev_df.sample(frac=0.66, random_state=703021)
 dev_df = testdev_df.drop(test_df.index)
 
 train_df.to_csv(
