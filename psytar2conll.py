@@ -33,17 +33,26 @@ BINARY_PATH = "data/binary/"
 CONLL_ALL_PATH = "data/all/"
 CONLL_CONFLATED_PATH = "data/conflated/"
 
-sentence_df = pd.read_excel(XLSX_PATH, sheet_name="Sentence_Labeling")
+sentence_df = pd.read_excel(
+    XLSX_PATH, sheet_name="Sentence_Labeling", dtype={"drug_id": str, "sentences": str}
+)
 
 sentence_df = sentence_df[
     ["drug_id", "sentence_index", "sentences", "ADR", "WD", "EF", "INF", "SSI", "DI"]
 ]
+
+
+sentence_df = sentence_df.dropna(subset=["sentences"])
+sentence_df = sentence_df.loc[sentence_df.sentences.apply(lambda x: len(x.strip())) > 0]
 sentence_df = sentence_df.fillna(0)
+
+
 sentence_df[["ADR", "WD", "EF", "INF", "SSI", "DI"]] = (
     sentence_df[["ADR", "WD", "EF", "INF", "SSI", "DI"]]
     .replace(re.compile("[!* ]+"), 1)
     .astype(int)
 )
+
 
 print("Writing binary datasets...")
 
@@ -92,13 +101,11 @@ dev_df.to_csv(
 print("Done.")
 
 sentences_map = {}
-for drug_name in sentence_df.drug_id.unique()[:-1]:
+for drug_name in sentence_df.drug_id.unique():
     sentences_map[drug_name] = {}
 
-for _, row in sentence_df.iloc[:-1].iterrows():
-
-    if isinstance(row.sentences, str):
-        sentences_map[row.drug_id][row.sentence_index] = mine.Sentence(row.sentences)
+for _, row in sentence_df.iterrows():
+    sentences_map[row.drug_id][row.sentence_index] = mine.Sentence(row.sentences)
 
 
 sheet_names = ["ADR", "WD", "SSI", "DI"]
@@ -114,11 +121,12 @@ for sheet in sheet_names:
     for i in range(30 if sheet == "ADR" else 10):
         annotation_fields.append(f"{sheet}{i + 1}")
 
-    sentence_df = []
-
     for key, row in labels_df.iterrows():
 
-        sentence = sentences_map[row.drug_id][row.sentence_index]
+        try:
+            sentence = sentences_map[row.drug_id][row.sentence_index]
+        except:
+            pass
         for anno_name in annotation_fields:
             total_annos += 1
             anno = row[anno_name]

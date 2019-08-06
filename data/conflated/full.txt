@@ -30799,8 +30799,6 @@ as	I-Entity
 good	I-Entity
 .	O
 
-
-
 Headaches	B-Entity
 ,	O
 mood	B-Entity
@@ -42634,8 +42632,6 @@ Otherwise	O
 great	O
 !	O
 
-
-
 The	O
 worst	O
 side	O
@@ -43668,8 +43664,6 @@ been	O
 diagnosed	O
 with	O
 depression	B-Entity
-
-
 
 insomnia	B-Entity
 !	O
@@ -44985,8 +44979,6 @@ SEEING	O
 YOURSELF	O
 as	O
 a	O
-
-
 
 extreme	B-Entity
 nausea	I-Entity
@@ -53371,8 +53363,6 @@ taking	O
 anything	O
 else	O
 .	O
-
-
 
 Nausea	B-Entity
 at	I-Entity

@@ -30799,8 +30799,6 @@ as	I-ADR
 good	I-ADR
 .	O
 
-
-
 Headaches	B-ADR
 ,	O
 mood	B-ADR
@@ -42634,8 +42632,6 @@ Otherwise	O
 great	O
 !	O
 
-
-
 The	O
 worst	O
 side	O
@@ -43668,8 +43664,6 @@ been	O
 diagnosed	O
 with	O
 depression	B-DI
-
-
 
 insomnia	B-ADR
 !	O
@@ -44985,8 +44979,6 @@ SEEING	O
 YOURSELF	O
 as	O
 a	O
-
-
 
 extreme	B-ADR
 nausea	I-ADR
@@ -53371,8 +53363,6 @@ taking	O
 anything	O
 else	O
 .	O
-
-
 
 Nausea	B-ADR
 at	I-ADR
